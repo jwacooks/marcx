@@ -14,7 +14,7 @@ import jsonpath_rw as jpath
 import re
 import warnings
 
-__version__ = '0.1.17'
+__version__ = '0.1.17.0'
 
 __all__ = [
     'FatRecord',
@@ -30,9 +30,9 @@ class DotDict(dict):
             d = {}
         if kwargs:
             d.update(**kwargs)
-        for k, v in d.iteritems():
+        for k, v in d.items():
             setattr(self, k, v)
-        for k in self.__class__.__dict__.keys():
+        for k in list(self.__class__.__dict__.keys()):
             if not (k.startswith('__') and k.endswith('__')):
                 setattr(self, k, getattr(self, k))
 
@@ -88,7 +88,7 @@ def pairwise(iterable):
     s -> (s0, s1), (s2, s3), (s4, s5), ...
     """
     it = iter(iterable)
-    return itertools.izip(it, it)
+    return zip(it, it)
 
 def valuegetter(*fieldspecs, **kwargs):
     """
@@ -236,7 +236,7 @@ class FatRecord(Record):
 
         if indicators is None:
             indicators = [' ', ' ']
-        if isinstance(indicators, basestring):
+        if isinstance(indicators, str):
             if len(indicators) == 2:
                 indicators = [indicators[0], indicators[1]]
             else:
@@ -246,13 +246,13 @@ class FatRecord(Record):
             field = Field(tag, data=data)
         else:     # == non-control field (010 -- 999)
             subfields = []
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.items():
                 key = key.replace('_', '')
-                if isinstance(value, basestring):
+                if isinstance(value, str):
                     subfields += [key, value]
                 elif isinstance(value, collections.Iterable):
                     for val in value:
-                        if not isinstance(val, basestring):
+                        if not isinstance(val, str):
                             raise ValueError('subfield values must be strings')
                         subfields += [key, val]
                 else:
@@ -357,9 +357,9 @@ class FatRecord(Record):
         fieldspecs = set()
         function = lambda val: False
         for arg in args:
-            if callable(arg):
+            if isinstance(arg, collections.Callable):
                 function = arg
-            elif isinstance(arg, basestring):
+            elif isinstance(arg, str):
                 fieldspecs.add(arg)
             else:
                 raise ValueError('argument must be callable (test function) '
@@ -397,9 +397,9 @@ class FatRecord(Record):
         fieldspecs = set()
         function = lambda val: True
         for arg in args:
-            if callable(arg):
+            if isinstance(arg, collections.Callable):
                 function = arg
-            elif isinstance(arg, basestring):
+            elif isinstance(arg, str):
                 fieldspecs.add(arg)
             else:
                 raise ValueError('argument must be callable (test function) '
@@ -444,11 +444,11 @@ def flatten(struct):
         return []
     flat = []
     if isinstance(struct, dict):
-        for key, result in struct.iteritems():
+        for key, result in struct.items():
             flat += flatten(result)
         return flat
 
-    if isinstance(struct, basestring):
+    if isinstance(struct, str):
         return [struct]
 
     try:
